@@ -21,29 +21,43 @@
 ### 3.1. 핵심 알고리즘
 * **Algorithm:** PPO (Proximal Policy Optimization)
 
-### 3.2. 보상 함수 설계
+### 3.2. 신경망 구조 (Network Architecture)
+단순한 CNN이 아닌, **잔차 연결(Residual Connection)**을 적용하여 깊은 신경망에서도 효율적인 학습이 가능하도록 설계했습니다.
+* **Input:** 9x9x1 (정규화된 그리드 정보)
+* **Backbone:** Initial Conv2d + 4 Residual Blocks (3x3 Conv, ReLU)
+* **Head:** Actor (Action Probabilities), Critic (State Value)
+
+### 3.3. 환경 설정 (Environment Specs)
+* **Grid Size:** 9x9 (81 Cells)
+* **Mines:** 10 (Beginner Mode)
+* **Action Space:** 162개 (0~80: 클릭/화음, 81~161: 깃발 설치)
+* **Observation:** -1.0 ~ 1.0으로 정규화된 1채널 텐서
+
+### 3.4. 보상 함수 설계
 본 연구에서는 에이전트가 투입 대비 산출을 고려하도록 Net Profit 보상 함수를 설계했습니다.
 
-#### 기본 비용
-모든 행동에 대해 페널티를 부여하여, 에이전트가 최소한의 행동으로 게임을 진행하도록 유도합니다.
-* **Step Penalty:** -0.3 (일반 클릭 및 깃발 설치)
+#### 상태 보상 (Terminal Rewards)
+* **Win:** +10.0 (모든 안전한 셀 오픈)
+* **Lose:** -10.0 (지뢰 클릭 또는 안전한 곳에 깃발 설치 시)
+* **Invalid Action:** -1.0 (이미 열린 곳 클릭 등)
 
-#### 화음 이득
-화음 시도 시, **(획득한 정보량 - 투자한 비용)**이 양수일 때만 보상을 부여합니다.
+#### 효율성 보상 (Efficiency Rewards)
+모든 행동에 비용을 부과하고, 화음 성공 시 순수익을 계산합니다.
 
-$$R_{chording} = 0.3 \times (N_{opened} - N_{flags}) - 0.3$$
+1.  **Step Penalty:** -0.3 (모든 행동 기본 비용)
+2.  **Chording Gain (화음 이득):**
+    $$R_{chording} = 0.3 \times (N_{opened} - N_{flags}) - 0.3$$
+    * $N_{opened}$: 화음으로 인해 열린 셀의 개수
+    * $N_{flags}$: 화음을 위해 투자한 깃발의 개수
 
-* $N_{opened}$: 화음으로 인해 열린 셀의 개수
-* $N_{flags}$: 화음을 위해 투자한 깃발의 개수
-
-해석: 깃발을 설치하는 비용을 지불하고도 남는 이득이 있을 때만 긍정적인 보상을 제공하여, 확실하지 않은 상황에서의 무분별한 깃발 설치를 억제합니다.
+    해석: 깃발을 설치하는 비용을 지불하고도 남는 이득이 있을 때만 긍정적인 보상을 제공하여, 확실하지 않은 상황에서의 무분별한 깃발 설치를 억제합니다.
 
 ## 4. 파일 구조
 
 ```text
 .
-├── train_ppo_v9.py          # PPO 학습 및 미세조정 실행 스크립트
-├── minesweeper_env_v9.py    # Gymnasium 기반 커스텀 지뢰찾기 환경 (Reward Shaping 적용)
+├── train_ppo_v9.py          # PPO 학습 (ResNet 적용) 및 미세조정 실행 스크립트
+├── minesweeper_env_v9.py    # Gymnasium 기반 커스텀 지뢰찾기 환경 (Net Profit Reward)
 ├── saved_models/            # 모델 체크포인트 저장소
 │   ├── Minesweeper-v8-Efficiency__train_ppo_v8__1__1764778213.pth  # 사전 학습된 8차 모델
 │   └── Minesweeper-v9-NetProfit__train_ppo_v9__1__1764858933.pth   # 최종 모델
@@ -55,7 +69,7 @@ $$R_{chording} = 0.3 \times (N_{opened} - N_{flags}) - 0.3$$
 Python 3.x 환경에서 다음의 종속성 라이브러리를 설치합니다.
 
 ```bash
-pip install torch gymnasium numpy tyro tensorboard wandb
+pip install torch gymnasium numpy tyro tensorboard wandb pillow
 ```
 ### 5.2. 학습 실행
 ```bash
