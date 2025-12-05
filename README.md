@@ -56,7 +56,7 @@ Python 3.x 환경에서 다음의 종속성 라이브러리를 설치합니다.
 
 ```bash
 pip install torch gymnasium numpy tyro tensorboard wandb
-
+```
 ### 5.2. 학습 실행
 ```bash
 python3 train_ppo_v9.py \
