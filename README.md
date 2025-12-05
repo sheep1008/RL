@@ -21,25 +21,12 @@
 ### 3.1. 핵심 알고리즘
 * **Algorithm:** PPO (Proximal Policy Optimization)
 
-### 3.2. 신경망 구조 (Network Architecture)
-단순한 CNN이 아닌, **잔차 연결(Residual Connection)**을 적용하여 깊은 신경망에서도 효율적인 학습이 가능하도록 설계했습니다.
-* **Input:** 9x9x1 (정규화된 그리드 정보)
-* **Backbone:** Initial Conv2d + 4 Residual Blocks (3x3 Conv, ReLU)
-* **Head:** Actor (Action Probabilities), Critic (State Value)
-
-### 3.3. 환경 설정 (Environment Specs)
-* **Grid Size:** 9x9 (81 Cells)
-* **Mines:** 10 (Beginner Mode)
-* **Action Space:** 162개 (0~80: 클릭/화음, 81~161: 깃발 설치)
-* **Observation:** -1.0 ~ 1.0으로 정규화된 1채널 텐서
-
-### 3.4. 보상 함수 설계
+### 3.2. 보상 함수 설계
 본 연구에서는 에이전트가 투입 대비 산출을 고려하도록 Net Profit 보상 함수를 설계했습니다.
 
 #### 상태 보상 (Terminal Rewards)
 * **Win:** +10.0 (모든 안전한 셀 오픈)
 * **Lose:** -10.0 (지뢰 클릭 또는 안전한 곳에 깃발 설치 시)
-* **Invalid Action:** -1.0 (이미 열린 곳 클릭 등)
 
 #### 효율성 보상 (Efficiency Rewards)
 모든 행동에 비용을 부과하고, 화음 성공 시 순수익을 계산합니다.
