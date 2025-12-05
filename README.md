@@ -48,7 +48,7 @@ $$R_{chording} = 0.3 \times (N_{opened} - N_{flags}) - 0.3$$
 │   ├── Minesweeper-v8-Efficiency__train_ppo_v8__1__1764778213.pth  # 사전 학습된 8차 모델
 │   └── Minesweeper-v9-NetProfit__train_ppo_v9__1__1764858933.pth   # 최종 모델
 └── README.md                # 프로젝트 명세서
-
+```
 ## 5. 설치 및 실행 가이드
 
 ### 5.1. 환경 설정
